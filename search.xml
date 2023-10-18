@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Hello World</title>
+    <url>/2023/10/06/hello-world/</url>
+    <content><![CDATA[<p>​    哈喽大家好，这是我的第一篇博客，在这里，我将记录一名ctfer小菜鸡的成长笔记，希望大家喜欢！</p>
+<span id="more"></span>
+
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
     <title>Pwn虚拟机环境配置超详细版</title>
     <url>/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/</url>
     <content><![CDATA[<p>​		原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。</p>
@@ -28,6 +48,15 @@
 
 <p>如下</p>
 <p><img src="/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/07cbfa76506005efce49fd5569dd577.png"></p>
+<h3 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install checksec</span><br></pre></td></tr></table></figure>
+
+<p>之前用的checksec是下面的格式</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">checksec filename</span><br></pre></td></tr></table></figure>
+
+<p>但是今天重新安装的这个改了，需要用到下面的格式</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">checksec --file=filename</span><br></pre></td></tr></table></figure>
+
+<p><img src="/../imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/b4fe46c11a942b09df37ba6307ca76a.png"></p>
 <h3 id="LibcSearcher"><a href="#LibcSearcher" class="headerlink" title="LibcSearcher"></a>LibcSearcher</h3><p>网上的方法大部分都是Python2的方法，对于Python3基本不管用，建议Python3的用这个安装，就是有个缺点，没网的时候不能用</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install LibcSearcher</span><br></pre></td></tr></table></figure>
 
@@ -55,26 +84,6 @@
 
 
 <p>本文持续更新中，一些没提及的插件会在之后附上教程……</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2023/10/06/hello-world/</url>
-    <content><![CDATA[<p>​    哈喽大家好，这是我的第一篇博客，在这里，我将记录一名ctfer小菜鸡的成长笔记，希望大家喜欢！</p>
-<span id="more"></span>
-
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
   </entry>
 </search>
