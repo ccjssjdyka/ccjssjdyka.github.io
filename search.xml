@@ -55,7 +55,7 @@
   <entry>
     <title>pwnable-calc</title>
     <url>/2024/01/18/pwnable-calc/</url>
-    <content><![CDATA[<p>​		对于一个尚未入门的菜鸟来说，这道题刷新了我对漏洞利用的理解，赶巧碰上感冒，花了好几天结合大佬的wp才理清逻辑，那么废话不多说，直接开始解题。。。</p>
+    <content><![CDATA[<p>对于一个尚未入门的菜鸟来说，这道题刷新了我对漏洞利用的理解，赶巧碰上感冒，花了好几天结合大佬的wp才理清逻辑，那么废话不多说，直接开始解题。。。</p>
 <span id="more"></span>
 
 <p>32位程序，没开PIE</p>
@@ -125,7 +125,7 @@
   <entry>
     <title>Pwn虚拟机环境配置超详细版</title>
     <url>/2023/10/18/Pwn%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E8%B6%85%E8%AF%A6%E7%BB%86%E7%89%88/</url>
-    <content><![CDATA[<p>​		原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。</p>
+    <content><![CDATA[<p>原来的虚拟机被我搞崩了，只能重装了(脚本全无了呜呜呜)，看到网上的安装教程都比较零碎，多多少少也有点小瑕疵，因此，我决定水一篇博客(bushi)，写一下我的pwn虚拟机环境全套安装路程。</p>
 <span id="more"></span>
 
 <h2 id="版本说明"><a href="#版本说明" class="headerlink" title="版本说明"></a>版本说明</h2><p>Linux版本：Ubuntu20.04</p>
@@ -181,11 +181,29 @@
 <h3 id="one-gadget"><a href="#one-gadget" class="headerlink" title="one_gadget"></a>one_gadget</h3><p>这个安装比较简单，运行下面代码即可</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install ruby -y</span><br><span class="line">sudo apt-get install gem -y</span><br><span class="line">sudo gem install one_gadget</span><br></pre></td></tr></table></figure>
 
+<h3 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a>ifconfig</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install net-tools</span><br></pre></td></tr></table></figure>
 
+<h3 id="lief"><a href="#lief" class="headerlink" title="lief"></a>lief</h3><p>AWD攻防插件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python3 -m pip3 install launchpadlib</span><br><span class="line">pip3 install setuptools --upgrade</span><br><span class="line">pip3 install lief</span><br></pre></td></tr></table></figure>
 
+<h3 id="alpha3"><a href="#alpha3" class="headerlink" title="alpha3"></a>alpha3</h3><p>用于可见shellcode转换</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/TaQini/alpha3.git</span><br><span class="line"></span><br><span class="line">#使用方法</span><br><span class="line">cd alpha3</span><br><span class="line">python ./ALPHA3.py x64 ascii mixedcase rax --input=&quot;存储shellcode的文件&quot; &gt; 输出文件</span><br></pre></td></tr></table></figure>
 
+<h3 id="ae64"><a href="#ae64" class="headerlink" title="ae64"></a>ae64</h3><p>也是用于可见shellcode转化</p>
+<p>下载下面的包后按照md文档安装即可</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/veritas501/ae64.git</span><br></pre></td></tr></table></figure>
 
-<p>本文持续更新中，一些没提及的插件会在之后附上教程……</p>
+<p>如果报错：找不到importlib_resources模块</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip3 install importlib_resources</span><br></pre></td></tr></table></figure>
+
+<p>然后再重新安装</p>
+<h3 id="seccomp-tools"><a href="#seccomp-tools" class="headerlink" title="seccomp-tools"></a>seccomp-tools</h3><p>分析沙盒的工具，ubuntu自带的ruby安装老是报错，可能是因为版本太低，所以我先删除了ubuntu自带的ruby，然后从[ruby官网](<a href="https://www.ruby-lang.org/en/downloads/">Download Ruby (ruby-lang.org)</a>)上下载源码自行编译</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf ruby-3.0.0.tar</span><br><span class="line">cd ruby-3.0.0</span><br><span class="line">sudo ./configure</span><br><span class="line">sudo make</span><br><span class="line">sudo make install</span><br><span class="line">#编译完成后安装seccomp-tools</span><br><span class="line">sudo gem install seccomp-tools</span><br></pre></td></tr></table></figure>
+
+<h3 id="patchelf"><a href="#patchelf" class="headerlink" title="patchelf"></a>patchelf</h3><p>用于修改程序动态链接库</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install patchelf</span><br></pre></td></tr></table></figure>
+
+<p>本文持续更新中……</p>
 ]]></content>
   </entry>
 </search>
