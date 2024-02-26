@@ -29,7 +29,6 @@
 <h5 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h5><p><a href="https://xuanxuanblingbling.github.io/ctf/pwn/2020/03/13/tcache/">和媳妇一起学Pwn 之 Tcache Tear | Clang裁缝店 (xuanxuanblingbling.github.io)</a></p>
 <p><a href="https://cloud.tencent.com/developer/article/2063667">[pwnable.tw] Tcache tear — 利用bss构造堆块的地址泄露技巧-腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
 <h5 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h5><p>先查看一下libc版本，2.27版本，在2.26版本的时候添加了tcache，虽然tcache提高了性能，但是却舍弃了很多检查，就好比double free</p>
-<h5 id="准备工作-1"><a href="#准备工作-1" class="headerlink" title="准备工作"></a>准备工作</h5><p>先查看一下libc版本，2.27版本，在2.26版本的时候添加了tcache，虽然tcache提高了性能，但是却舍弃了很多检查，就好比double free</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">strings libc.so| grep <span class="string">&quot;GNU&quot;</span></span><br></pre></td></tr></table></figure>
 
 <p><img src="/imgs/$%7Bfiilename%7D/pwnable-tcache_tear-1.png" alt="pwnable-tcache_tear-1"></p>
