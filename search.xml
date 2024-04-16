@@ -21,6 +21,23 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Re Go Go Go!</title>
+    <url>/2024/04/16/Re-Go-Go-Go/</url>
+    <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>记录一下开始学Re啦，先水一篇博客再说</p>
+<span id="more"></span>
+
+<p>写这篇博客是因为刚开始做Re题，遇到了一道挺有意思的题目，于是记录一下</p>
+<p>因为平时一直在写pwn题，虽然一直在用ida，但是对ida的了解程度还是太低了，没想到ida有那么强大的功能，可以直接运行代码修改数据(我还是太菜了)</p>
+<h5 id="GFCTF-2021-wordy"><a href="#GFCTF-2021-wordy" class="headerlink" title="[GFCTF 2021]wordy"></a>[GFCTF 2021]wordy</h5><p>这道题考的点很简单，就是一个花指令</p>
+<p>本题的花指令是 0xEB 0xFF，所以把花指令nop掉就可以了</p>
+<p>用ida打开，选择File-&gt;script command,然后输入如下代码就可以帮我们把所有的花指令都nop掉</p>
+<p><img src="/imgs/$%7Bfiilename%7D/Re_GO_GO_GO-1.png"></p>
+<p>运行后就可以看到很多字符，提取出来即可</p>
+<p><img src="/imgs/$%7Bfiilename%7D/Re_GO_GO_GO-2.png"></p>
+<p>然后flag就藏在这些字符里面</p>
+]]></content>
+  </entry>
+  <entry>
     <title>栈迁移</title>
     <url>/2024/03/27/%E6%A0%88%E8%BF%81%E7%A7%BB/</url>
     <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>躺着躺着突然悟到了栈迁移的真谛，这种感觉谁懂？！</p>
