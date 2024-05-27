@@ -54,7 +54,15 @@
 
 <h4 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt-get install ninja-build</span><br><span class="line">sudo apt-get install zlib1g zlib1g-dev</span><br><span class="line">sudo apt-get install libglib2.0-dev</span><br><span class="line">sudo apt-get install libpixman-1-dev</span><br></pre></td></tr></table></figure>
 
-<h4 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./configure</span><br></pre></td></tr></table></figure>
+<p>安装libslirp-dev，这个我还不了解是什么，后续深入了解后再补充，没安装的话有些题目启动会报错，一定要在.&#x2F;configure前安装好，不然就得像我一样编译两次(哭了)</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install libslirp-dev</span><br></pre></td></tr></table></figure>
+
+<p>没安装的话报错如下</p>
+<p>说缺少了user网络后端的支持</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">qemu-system-x86_64: -netdev user,id=t0,: network backend &#x27;user&#x27; is not compiled into this binary</span><br></pre></td></tr></table></figure>
+
+<h4 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h4><p>本来是没有后面那个 –enable-slirp 的，加上这个是因为安装了 libslirp-dev</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./configure --enable-slirp</span><br></pre></td></tr></table></figure>
 
 <h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><p>此过程大概需要编译30分钟</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make</span><br></pre></td></tr></table></figure>
