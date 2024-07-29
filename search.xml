@@ -514,17 +514,31 @@
 <td>%u</td>
 </tr>
 <tr>
-<td>long</td>
+<td>long (32位)</td>
 <td>-2147483648</td>
 <td>2147483647 (2^31 - 1)</td>
 <td>0x7FFFFFFF</td>
 <td>%ld</td>
 </tr>
 <tr>
-<td>unsigned long</td>
+<td>long (64位)</td>
+<td>-9223372036854775808</td>
+<td>9223372036854775807 (2^63 - 1)</td>
+<td>0x7FFFFFFFFFFFFFFF</td>
+<td>%ld</td>
+</tr>
+<tr>
+<td>unsigned long (32位)</td>
 <td>0</td>
 <td>4294967295 (2^32 - 1)</td>
 <td>0xFFFFFFFF</td>
+<td>%lu</td>
+</tr>
+<tr>
+<td>unsigned long (64位)</td>
+<td>0</td>
+<td>18446744073709551615 (2^64 - 1)</td>
+<td>0xFFFFFFFFFFFFFFFF</td>
 <td>%lu</td>
 </tr>
 <tr>
