@@ -26,28 +26,26 @@
   <meta name="description" content="笔者在复现 ccsssc18 的 vm pwn时，偶然发现了另一种可以通过puts触发 house of cat 调用链的方法，故做此笔记">
 <meta property="og:type" content="article">
 <meta property="og:title" content="house of cat在puts中的利用">
-<meta property="og:url" content="http://example.com/2025/03/12/house-of-dog/index.html">
+<meta property="og:url" content="http://example.com/2025/03/12/house-of-cat%E5%9C%A8puts%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8/index.html">
 <meta property="og:site_name" content="feichai&#39;s Blog">
 <meta property="og:description" content="笔者在复现 ccsssc18 的 vm pwn时，偶然发现了另一种可以通过puts触发 house of cat 调用链的方法，故做此笔记">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-1.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-7.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-8.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-2.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-3.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-4.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-6.png">
-<meta property="og:image" content="http://example.com/imgs/house-of-cat-puts-5.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-1.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-2.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-3.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-4.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-6.png">
+<meta property="og:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-5.png">
 <meta property="article:published_time" content="2025-03-12T07:27:08.000Z">
-<meta property="article:modified_time" content="2025-03-12T11:23:24.196Z">
+<meta property="article:modified_time" content="2025-03-12T11:00:20.359Z">
 <meta property="article:author" content="肥柴">
 <meta property="article:tag" content="io_file">
 <meta property="article:tag" content="house of cat">
 <meta property="article:tag" content="vm pwn">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/imgs/house-of-cat-puts-1.png">
+<meta name="twitter:image" content="http://example.com/imgs/$%7Bfiilename%7D/house-of-dog-1.png">
 
-<link rel="canonical" href="http://example.com/2025/03/12/house-of-dog/">
+<link rel="canonical" href="http://example.com/2025/03/12/house-of-cat%E5%9C%A8puts%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8/">
 
 
 <script id="page-configurations">
@@ -219,7 +217,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2025/03/12/house-of-dog/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/03/12/house-of-cat%E5%9C%A8puts%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -244,7 +242,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2025-03-12 15:27:08 / 修改时间：19:23:24" itemprop="dateCreated datePublished" datetime="2025-03-12T15:27:08+08:00">2025-03-12</time>
+              <time title="创建时间：2025-03-12 15:27:08 / 修改时间：19:00:20" itemprop="dateCreated datePublished" datetime="2025-03-12T15:27:08+08:00">2025-03-12</time>
             </span>
 
           
@@ -288,26 +286,23 @@
 <h4 id="发现过程"><a href="#发现过程" class="headerlink" title="发现过程"></a>发现过程</h4><p>在笔者调试<strong>puts函数</strong>的过程中，偶然发现了<strong>puts函数</strong>中存在这样一段代码</p>
 <p>先取出 <strong>_IO_2_1_stdout_</strong> 给 r13，也就是 <strong>_IO_2_1_stdout_</strong> 的 <strong>flags</strong>，然后将其和<strong>0x8000</strong>，即和 <strong>_IO_USER_LOCK</strong> 相与，若相与后eax为0x8000则跳转</p>
 <p>即 <strong>flags &#x3D; 0x00008000</strong></p>
-<p><img src="/imgs/house-of-cat-puts-1.png" alt="house-of-cat-puts-1"></p>
-<p>源码如下</p>
-<p><img src="/imgs/house-of-cat-puts-7.png" alt="house-of-cat-puts-7"></p>
-<p><img src="/imgs/house-of-cat-puts-8.png" alt="house-of-cat-puts-8"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-1.png" alt="house-of-dog-1"></p>
 <p>跳转后来到这里</p>
 <p>取 [rdx + 0xc0] 赋值给 eax，即为<strong>IO_file结构体</strong>中的 <strong>mode</strong> 字段</p>
-<p><img src="/imgs/house-of-cat-puts-2.png" alt="house-of-cat-puts-2"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-2.png" alt="house-of-dog-2"></p>
 <p>此时，我们<strong>设置mode字段为0</strong>，就可一路畅通，执行到以下代码</p>
 <p>puts+159 就是吧 <strong>vtable</strong> 取出来，然后<strong>call [vtable+0x38]</strong></p>
 <p>从这里开始即为<strong>house of cat的调用链</strong>，在此之前，我已将<strong>vtable</strong> 劫持为 <strong>_IO_wfile_jumps+0x10</strong>,所以这里所显示的即为<strong>_IO_wfile_seekoff</strong></p>
-<p><img src="/imgs/house-of-cat-puts-3.png" alt="house-of-cat-puts-3"></p>
-<p><img src="/imgs/house-of-cat-puts-4.png" alt="house-of-cat-puts-4"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-3.png" alt="house-of-dog-3"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-4.png" alt="house-of-dog-4"></p>
 <p>还有一个需要注意的点，在 house of cat 中也有提及，在下图代码中需要满足以下条件</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">_wide_data-&gt;_IO_read_ptr != _wide_data-&gt;_IO_read_end</span><br><span class="line">_wide_data-&gt;_IO_write_ptr &gt; _wide_data-&gt;_IO_write_base</span><br><span class="line"></span><br><span class="line">如果_wide_data=fake_io_addr+<span class="number">0x30</span>,那么就等同于</span><br><span class="line">fake_IO_FILE-&gt;_IO_save_base &lt; fake_IO_FILE-&gt;_IO_backup_base</span><br></pre></td></tr></table></figure>
 
-<p><img src="/imgs/house-of-cat-puts-6.png" alt="house-of-cat-puts-6"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-6.png" alt="house-of-dog-6"></p>
 <p>根据house of cat伪造好结构体后，调用链如下</p>
 <p><strong>_IO_puts   —-&gt;  _IO_wfile_seekoff   —-&gt;     _IO_switch_to_wget_mode</strong></p>
 <p>最终在 <strong>_IO_switch_to_wget_mode</strong> 执行我们的代码</p>
-<p><img src="/imgs/house-of-cat-puts-5.png" alt="house-of-cat-puts-5"></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-5.png" alt="house-of-dog-5"></p>
 <p>最终构造的 <strong>fake_IO_FILE</strong> 如下，大致看着和house of cat差不多，但是还是有些出入</p>
 <p>如下</p>
 <ul>
@@ -368,7 +363,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://example.com/2025/03/12/house-of-dog/" title="house of cat在puts中的利用">http://example.com/2025/03/12/house-of-dog/</a>
+    <a href="http://example.com/2025/03/12/house-of-cat%E5%9C%A8puts%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8/" title="house of cat在puts中的利用">http://example.com/2025/03/12/house-of-cat在puts中的利用/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -419,13 +414,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2025/02/18/HGAME2025-pwn-writeup/" rel="prev" title="HGAME2025 pwn writeup">
-      <i class="fa fa-chevron-left"></i> HGAME2025 pwn writeup
+    <a href="/2025/03/12/house-of-dog/" rel="prev" title="house of cat在puts中的利用">
+      <i class="fa fa-chevron-left"></i> house of cat在puts中的利用
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2025/03/12/house-of-cat%E5%9C%A8puts%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8/" rel="next" title="house of cat在puts中的利用">
-      house of cat在puts中的利用 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
