@@ -31,7 +31,7 @@
 <h4 id="漏洞环境"><a href="#漏洞环境" class="headerlink" title="漏洞环境"></a>漏洞环境</h4><p>glibc 2.35-0ubuntu3.8_amd64</p>
 <h4 id="发现过程"><a href="#发现过程" class="headerlink" title="发现过程"></a>发现过程</h4><p>在笔者调试<strong>puts函数</strong>的过程中，偶然发现了<strong>puts函数</strong>中存在这样一段代码</p>
 <p>先取出 <strong>_IO_2_1_stdout_</strong> 给 r13，也就是 <strong>_IO_2_1_stdout_</strong> 的 <strong>flags</strong>，然后将其和<strong>0x8000</strong>，即和 <strong>_IO_USER_LOCK</strong> 相与，若相与后eax为0x8000则跳转</p>
-<p>即 <strong>flags &#x3D; 0x00008000</strong></p>
+<p>即 <strong>flags &#x3D; 0x00008000</strong> 就是为了绕过 _IO_acquire_lock </p>
 <p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-1.png" alt="house-of-dog-1"></p>
 <p>源码如下</p>
 <p><img src="/imgs/$%7Bfiilename%7D/house-of-cat-puts-7-17417789663411.png" alt="house-of-cat-puts-7"></p>
@@ -44,6 +44,8 @@
 <p>从这里开始即为<strong>house of cat的调用链</strong>，在此之前，我已将<strong>vtable</strong> 劫持为 <strong>_IO_wfile_jumps+0x10</strong>,所以这里所显示的即为<strong>_IO_wfile_seekoff</strong></p>
 <p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-3.png" alt="house-of-dog-3"></p>
 <p><img src="/imgs/$%7Bfiilename%7D/house-of-dog-4.png" alt="house-of-dog-4"></p>
+<p>在源码中如下，其实就相当于把 <strong>_IO_sputn</strong> 改成了 <strong>_IO_wfile_seekoff</strong></p>
+<p><img src="/imgs/$%7Bfiilename%7D/house-of-cat-puts-9.png" alt="house-of-cat-puts-9"></p>
 <p>还有一个需要注意的点，在 house of cat 中也有提及，在下图代码中需要满足以下条件</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_wide_data-&gt;_IO_read_ptr != _wide_data-&gt;_IO_read_end</span><br><span class="line">_wide_data-&gt;_IO_write_ptr &gt; _wide_data-&gt;_IO_write_base</span><br><span class="line"></span><br><span class="line">如果_wide_data=fake_io_addr+<span class="number">0x30</span>,那么就等同于</span><br><span class="line">fake_IO_FILE-&gt;_IO_save_base &lt; fake_IO_FILE-&gt;_IO_backup_base</span><br></pre></td></tr></table></figure>
 
