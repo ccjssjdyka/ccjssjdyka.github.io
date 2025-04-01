@@ -128,7 +128,6 @@
         <category>write up</category>
       </categories>
       <tags>
-        <tag>chunk overlapping</tag>
         <tag>largebin attack</tag>
         <tag>栈迁移</tag>
         <tag>io_file</tag>
@@ -137,6 +136,7 @@
         <tag>orw</tag>
         <tag>format</tag>
         <tag>数组越界</tag>
+        <tag>chunk overlapping</tag>
         <tag>house of botcake</tag>
         <tag>mprotect</tag>
       </tags>
@@ -285,9 +285,9 @@
         <category>笔记</category>
       </categories>
       <tags>
+        <tag>chunk overlapping</tag>
         <tag>uaf</tag>
         <tag>chunk extend</tag>
-        <tag>chunk overlapping</tag>
       </tags>
   </entry>
   <entry>
