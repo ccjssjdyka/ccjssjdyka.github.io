@@ -332,21 +332,28 @@
     <!-- require MetingJS-->
     <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
     <!--网易云-->   
-    <meting-js
-      server="netease"
-      id="2840267056"
-	    type="playlist" 
-	    mini="false"
-      fixed="false"
-      list-folded="true"
-      autoplay="true"
-      volume="0.4"
-      theme="#FADFA3"
-      order="random"
-	    loop="all"
-      preload="auto"
-      mutex="true">
-    </meting-js>
+    <div id="aplayer-local"></div>
+    <script>
+      const ap = new APlayer({
+        container: document.getElementById('aplayer-local'),
+        audio: [
+          {
+            name: 'Find Yourself',
+            artist: 'Athletics',
+            url: '/music/find_yourself/find_yourself.mp3', 
+            cover: '/music/find_yourself/cover.jpg'  
+          }
+        ],
+        mini: false,
+        fixed: false,
+        autoplay: true,
+        volume: 0.4,
+        theme: '#FADFA3',
+        order: 'random',
+        loop: 'all',
+        mutex: true
+      });
+    </script>
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
