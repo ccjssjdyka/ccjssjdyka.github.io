@@ -1285,10 +1285,10 @@
 <h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h3><p>这个没什么大问题</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install vim</span><br></pre></td></tr></table></figure>
 
-<h3 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h3><p>先按个pip，再按pwntools</p>
+<h3 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h3><p>先安个pip，再安pwntools</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br><span class="line">pip install pwntools</span><br></pre></td></tr></table></figure>
 
-<h3 id="pwndbg"><a href="#pwndbg" class="headerlink" title="pwndbg"></a>pwndbg</h3><p>先按个git，再安装pwndbg</p>
+<h3 id="pwndbg"><a href="#pwndbg" class="headerlink" title="pwndbg"></a>pwndbg</h3><p>先安个git，再安装pwndbg</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install git</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/pwndbg/pwndbg</span><br><span class="line"><span class="built_in">cd</span> pwndbg</span><br><span class="line">sudo ./setup.sh</span><br></pre></td></tr></table></figure>
 
 <p>然后测试一下是否成功</p>
